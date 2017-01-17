@@ -1,0 +1,8 @@
+#!/bin/sh
+#$ -S /bin/bash
+#$ -cwd
+#$ -l s_vmem=4G
+#$ -l mem_req=4
+
+filename=`basename ${1} .gtf`
+perl ~/custom_command/gtf2bed.pl ${filename}.gtf > ${filename}.bed

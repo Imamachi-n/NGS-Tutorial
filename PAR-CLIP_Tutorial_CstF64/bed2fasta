@@ -1,0 +1,6 @@
+#!/bin/bash
+
+filename=`basename ${1} .bed`
+genome="/home/akimitsu/database/genome/hg19/hg19.fa"
+
+bedtools getfasta -name -s -split -fi ${genome} -bed ${filename}.bed > ${filename}.fa

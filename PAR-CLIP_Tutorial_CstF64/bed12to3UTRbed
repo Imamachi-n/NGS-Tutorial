@@ -1,0 +1,8 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -l s_vmem=4G
+#$ -l mem_req=4
+
+filename=`basename ${1} .bed`
+bed12to3UTRbed.pl ${filename}.bed ${filename}_3UTR.bed ${filename}_non-3UTR.bed
