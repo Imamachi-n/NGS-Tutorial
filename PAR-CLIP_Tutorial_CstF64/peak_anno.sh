@@ -16,3 +16,6 @@ filename=`basename ${gtffile} .gtf`
 peak_bed_file="SRR488740_PAR-CLIP_CstF-64_clusters.bed"
 peakfilename=`basename ${peak_bed_file} .bed`
 # bedtools intersect -a ${peakfilename}.bed -b ${gtfdir}/${filename}_only_Rep_basic_mRNAs_each_region_intron_plus.bed -wa -wb -loj > ${peakfilename}_with_mRNA_region.tmp
+
+# Annotate peaks
+python H_annotate_peaks.py ${peakfilename}_with_mRNA_region.tmp /home/akimitsu/database/gencode.v19.annotation_symbol_type_mRNA_list.txt ${peakfilename}_with_mRNA_region.txt

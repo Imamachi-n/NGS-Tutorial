@@ -139,7 +139,7 @@ for line in open("anno_tmp.txt", 'r'):
     data = line.split("\t")
     gene_name = data[1]
     if gene_name in mRNA_gene_name_dict:
-        print("checked" + gene_name)
+        print("checked: " + gene_name)
         print(data[0], data[1], "black", data[3], data[4], sep="\t", end="\n", file=output_file)
         continue
     print(data[0], data[1], "lncRNA", data[3], data[4], sep="\t", end="\n", file=output_file)
