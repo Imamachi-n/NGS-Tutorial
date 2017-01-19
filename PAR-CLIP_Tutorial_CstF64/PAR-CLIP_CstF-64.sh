@@ -8,6 +8,7 @@
 # Usage: PAR-CLIP_CstF-64.sh <FASTQ file (.fastq)>
 
 file=`basename ${1} .fastq`
+adapter="TCGTATGCCGTCTTCTGCTTGT"
 
 # Quality check
 mkdir fastqc_${file}
@@ -15,7 +16,7 @@ fastqc -o ./fastqc_${file} ./${file}.fastq -f fastq
 
 # Adapter trimming
 cutadapt -f fastq --match-read-wildcards --times 1 -e 0.1 -O 5 --quality-cutoff 6 -m 18 \
--a TCGTATGCCGTCTTCTGCTTGT \
+-a ${adapter} \
 ${file}.fastq > ${file}_1_trimmed_adapter.fastq 2>> ./log_${file}.txt
 
 # Quality filtering
