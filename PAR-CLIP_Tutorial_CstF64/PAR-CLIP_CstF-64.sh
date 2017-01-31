@@ -2,8 +2,8 @@
 #$ -S /bin/bash
 #$ -cwd
 #$ -soft -l ljob,lmem
-#$ -l s_vmem=16G
-#$ -l mem_req=16G
+#$ -l s_vmem=32G
+#$ -l mem_req=32G
 
 # Usage: PAR-CLIP_CstF-64.sh <FASTQ file (.fastq)>
 
@@ -16,8 +16,7 @@ fastqc -o ./fastqc_${file} ./${file}.fastq -f fastq
 
 # Adapter trimming
 cutadapt -f fastq --match-read-wildcards --times 1 -e 0.1 -O 5 --quality-cutoff 6 -m 18 \
--a ${adapter} \
-${file}.fastq > ${file}_1_trimmed_adapter.fastq 2>> ./log_${file}.txt
+-a ${adapter} ${file}.fastq > ${file}_1_trimmed_adapter.fastq 2>> ./log_${file}.txt
 
 # Quality filtering
 fastq_quality_trimmer -Q33 -t 20 -l 18 -i ./${file}_1_trimmed_adapter.fastq | fastq_quality_filter -Q33 -q 20 -p 80 -o ${file}_2_filtered.fastq
@@ -56,6 +55,8 @@ STAR --runMode alignReads --runThreadN 8 --genomeDir ${indexFile} \
 # --outFilterMultimapNmax 10 \
 
 # Calculate Base substitution frequency (T>C substitution)
+samtools view -h ./STAR_output_${file}_EndtoEnd/${file}_4_STAR_result_Aligned.sortedByCoord.out.bam \
+> ./STAR_output_${file}_EndtoEnd/${file}_4_STAR_result_Aligned.sortedByCoord.out.sam
 python E_mismatch_call_from_bam.py ./STAR_output_${file}_EndtoEnd/${file}_4_STAR_result_Aligned.sortedByCoord.out.sam \
 ./STAR_output_${file}_EndtoEnd/${file}_4_STAR_result_Aligned.sortedByCoord.out_indel.txt \
 ./STAR_output_${file}_EndtoEnd/${file}_5_Base_substitution_frequency.txt
