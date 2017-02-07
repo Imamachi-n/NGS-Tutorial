@@ -34,5 +34,5 @@ halflife_table <- fread(paste(dirname, "BridgeR_5_halflife_calc_R2_selection.txt
 pvalue_table <- BridgeRPvalueEvaluation(halflife_table, group = group,
                         hour = hour, comparisonFile = c("siCTRL","siPUM1"),
                         inforColumn = 4, CutoffTimePointNumber = 4, calibration = FALSE,
-                        save = TRUE, outputPrefix = paste(dirname, "BridgeR_6_PUM1KD", sep="/"))
+                        save = TRUE, outputPrefix = paste(dirname, "BridgeR_6_PUM1KD", sep="/"))    # Required
 

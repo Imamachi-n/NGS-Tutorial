@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mRNA_result="BridgR_result_PUM1_study_mRNA"
-lncRNA_result="BridgR_result_PUM1_study_lncRNA"
+mRNA_result="BridgeR_result_PUM1_study_mRNA"
+lncRNA_result="BridgeR_result_PUM1_study_lncRNA"
 
 # mRNA half-life
 mkdir ${mRNA_result}
