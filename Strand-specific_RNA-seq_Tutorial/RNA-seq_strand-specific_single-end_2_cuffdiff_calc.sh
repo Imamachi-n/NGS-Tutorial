@@ -5,13 +5,13 @@
 #$ -l s_vmem=32G
 #$ -l mem_req=32G
 
-filename="RNA-seq_UPF1_Knockdown_Gencode"
+filename="RNA-seq_UPF1_Knockdown_Gencode_ss"
 gtfFile="/home/akimitsu/database/gencode.v19.annotation_filtered.gtf"
 
 ## Quantification
-cuffdiff -p 8 --multi-read-correct -o ./cuffdiff_out_${filename} ${gtfFile} \
-./tophat_out_SRR4081222_Control_1/accepted_hits.bam,./tophat_out_SRR4081223_Control_2/accepted_hits.bam,./tophat_out_SRR4081224_Control_3/accepted_hits.bam \
-./tophat_out_SRR4081225_UPF1_knockdown_1/accepted_hits.bam,./tophat_out_SRR4081226_UPF1_knockdown_2/accepted_hits.bam,./tophat_out_SRR4081227_UPF1_knockdown_3/accepted_hits.bam
+cuffdiff -p 8 --multi-read-correct --library-type fr-firststrand -o ./cuffdiff_out_${filename} ${gtfFile} \
+./tophat_out_SRR4081222_Control_1_ss/accepted_hits.bam,./tophat_out_SRR4081223_Control_2_ss/accepted_hits.bam,./tophat_out_SRR4081224_Control_3_ss/accepted_hits.bam \
+./tophat_out_SRR4081225_UPF1_knockdown_1_ss/accepted_hits.bam,./tophat_out_SRR4081226_UPF1_knockdown_2_ss/accepted_hits.bam,./tophat_out_SRR4081227_UPF1_knockdown_3_ss/accepted_hits.bam
 
 ## Annotation
 gene_list="/home/akimitsu/database/gencode.v19.annotation_filtered_symbol_type_list.txt" #Required

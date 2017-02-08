@@ -16,16 +16,16 @@ mkdir fastqc_${file}
 fastqc -o ./fastqc_${file} ./${file}.fastq -f fastq
 
 ## 2. Quality filtering (Option)
-fastq_quality_trimmer -Q33 -t 20 -l 10 -i ./${file}.fastq | fastq_quality_filter -Q33 -q 20 -p 80 -o ${file}_1_filtered.fastq
+fastq_quality_trimmer -Q33 -t 20 -l 18 -i ./${file}.fastq | fastq_quality_filter -Q33 -q 20 -p 80 -o ${file}_1_filtered.fastq
 
 ## 3. Quality check
 mkdir fastqc_${file}_filtered
-fastqc -o ./fastqc_${file}_filtered ./${file}_2_norrna.fastq -f fastq
+fastqc -o ./fastqc_${file}_filtered ./${file}_1_filtered.fastq -f fastq
 
 ## 4. Mapping to genome and transcriptome
 tophat --bowtie1 -p 8 -o tophat_out_${file} -G ${gtfFile} ${indexGenomeFile} ${file}_1_filtered.fastq
 
-## 5. RNA quality check from mapped reads
+## 5. Data quality check from mapped reads
 mkdir geneBody_coverage_${file}
 samtools index ./tophat_out_${file}/accepted_hits.bam
 geneBody_coverage.py -r /home/akimitsu/database/hg19.HouseKeepingGenes_for_RSeQC.bed -i ./tophat_out_${file}/accepted_hits.bam  \
@@ -38,7 +38,7 @@ echo "track type=bedGraph name=${file} description=${file} visibility=2 maxHeigh
 cat ./UCSC_visual_${file}/tmp.txt ./UCSC_visual_${file}/${file}_4_result.bg > ./UCSC_visual_${file}/${file}_4_result_for_UCSC.bg
 bzip2 -c ./UCSC_visual_${file}/${file}_4_result_for_UCSC.bg > ./UCSC_visual_${file}/${file}_4_result_for_UCSC.bg.bz2
 
-#featureCounts - read counts
+## 7. featureCounts - read counts
 mkdir featureCounts_result_${file}
-featureCounts -T 8 -t exon -g gene_id -a ${gtfFile} -o featureCount_result_${file}/featureCounts_result_${file}.txt ./tophat_out_${file}/accepted_hits.bam
-sed -e "1,2d" featureCount_result_${file}/featureCounts_result_${file}.txt > featureCount_result_${file}/featureCounts_result_${file}_for_R.txt
+featureCounts -T 8 -t exon -g gene_id -a ${gtfFile} -o featureCounts_result_${file}/featureCounts_result_${file}.txt ./tophat_out_${file}/accepted_hits.bam
+sed -e "1,2d" featureCounts_result_${file}/featureCounts_result_${file}.txt | cut -f1,7 - > featureCounts_result_${file}/featureCounts_result_${file}_for_R.txt
