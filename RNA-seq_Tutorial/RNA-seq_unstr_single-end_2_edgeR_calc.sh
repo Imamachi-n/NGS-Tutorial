@@ -24,3 +24,4 @@ Yes
 
 # Add Annotation
 python2 ~/custom_command/annotate_gene_symbol_type.py  ${annoList} ${saveDir}/edgeR_test_result.txt ${saveDir}/edgeR_test_result_anno_plus.txt
+python2 ~/custom_command/split_into_each_gene_type.py ${saveDir}/edgeR_test_result_anno_plus.txt
