@@ -5,17 +5,17 @@
 #$ -l s_vmem=16G
 #$ -l mem_req=16G
 
-filename="BRIC-seq_PUM1_siCTRL_Gencode"
+filename="BRIC-seq_siCTRL_Gencode"
 gtfFile="/home/akimitsu/database/gencode.v19.annotation_filtered.gtf"
 
 # calc RPKM
 cuffnorm -p 8 --compatible-hits-norm -o ${filename} ${gtfFile} \
-tophat_out_BRIC-seq_siCTRL_0h_Sample_140318_Hiseq3A_l1_005_Dr_Akimitsu_RNA/accepted_hits.bam \
-tophat_out_BRIC-seq_siCTRL_1h_Sample_140318_Hiseq3A_l1_006_Dr_Akimitsu_RNA/accepted_hits.bam \
-tophat_out_BRIC-seq_siCTRL_2h_Sample_140318_140414_Hiseq3A_l1_012_Dr_Akimitsu_RNA/accepted_hits.bam \
-tophat_out_BRIC-seq_siCTRL_4h_Sample_140318_Hiseq3A_l1_019_Dr_Akimitsu_RNA/accepted_hits.bam \
-tophat_out_BRIC-seq_siCTRL_8h_Sample_140318_140414_Hiseq3A_l4_005_Dr_Akimitsu_RNA/accepted_hits.bam \
-tophat_out_BRIC-seq_siCTRL_12h_Sample_140318_140414_Hiseq3A_l4_019_Dr_Akimitsu_RNA/accepted_hits.bam
+tophat_out_BRIC_siCTRL_0min_DRR014413_DRR014435/accepted_hits.bam \
+tophat_out_BRIC_siCTRL_45min_DRR014415_DRR014437/accepted_hits.bam \
+tophat_out_BRIC_siCTRL_105min_DRR014417_DRR014439/accepted_hits.bam \
+tophat_out_BRIC_siCTRL_225min_DRR014419_DRR014441/accepted_hits.bam \
+tophat_out_BRIC_siCTRL_465min_DRR014421_DRR014443/accepted_hits.bam \
+tophat_out_BRIC_siCTRL_705min_DRR014423_DRR014445/accepted_hits.bam
 
 # mRNA RPKM
 gene_list="/home/akimitsu/database/gencode.v19.annotation_filtered_symbol_type_list.txt"

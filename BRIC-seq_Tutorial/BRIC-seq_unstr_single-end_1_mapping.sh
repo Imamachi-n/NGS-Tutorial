@@ -13,14 +13,14 @@ indexContamFile="/home/akimitsu/database/bowtie1_index/contam_Ribosomal_RNA"
 indexGenomeFile="/home/akimitsu/database/bowtie1_index/hg19"
 
 ## 1. Quality check
-# mkdir fastqc_${file}
-# fastqc -o ./fastqc_${file} ./${file}.fastq -f fastq
+mkdir fastqc_${file}
+fastqc -o ./fastqc_${file} ./${file}.fastq -f fastq
 
 ## 2. Quality filtering (Option)
-# fastq_quality_trimmer -Q33 -t 20 -l 10 -i ./${file}.fastq | fastq_quality_filter -Q33 -q 20 -p 80 -o ${file}_1_filtered.fastq
+fastq_quality_trimmer -Q33 -t 20 -l 10 -i ./${file}.fastq | fastq_quality_filter -Q33 -q 20 -p 80 -o ${file}_1_filtered.fastq
 
 ## 3. rRNA removal
-# bowtie -p 8 --un ./${file}_2_norrna.fastq ${indexContamFile} ./${file}_1_filtered.fastq > rRNA_${file}.fastq 2>> ./log_${file}.txt
+bowtie -p 8 --un ./${file}_2_norrna.fastq ${indexContamFile} ./${file}_1_filtered.fastq > rRNA_${file}.fastq 2>> ./log_${file}.txt
 
 ## 4. Quality check
 mkdir fastqc_${file}_filtered

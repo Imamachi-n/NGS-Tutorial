@@ -6,7 +6,7 @@ dirname_lncRNA <- commandArgs(trailingOnly=TRUE)[1]
 dirname_mRNA <- commandArgs(trailingOnly=TRUE)[2]
 inputFile <- strsplit(commandArgs(trailingOnly=TRUE)[3], ',')[[1]]
 
-group <- c("siCTRL", "siPUM1")    # Required
+group <- c("siCTRL", "siSTAU1")    # Required
 hour <- c(0, 1, 2, 4, 8, 12)    # Required
 
 input_matrix <- NULL
@@ -57,7 +57,7 @@ halflife_table <- BridgeRHalfLifeCalcR2Select(normalized_table,
                                               outputPrefix = paste(dirname_lncRNA, "BridgeR_5", sep="/"))
 
 pvalue_table <- BridgeRPvalueEvaluation(halflife_table, group = group,
-                        hour = hour, comparisonFile = c("siCTRL", "siPUM1"),
+                        hour = hour, comparisonFile = c("siCTRL", "siSTAU1"),
                         inforColumn = 4, CutoffTimePointNumber = 4, calibration = FALSE,
-                        save = TRUE, outputPrefix = paste(dirname_lncRNA, "BridgeR_6_PUM1KD", sep="/"))
+                        save = TRUE, outputPrefix = paste(dirname_lncRNA, "BridgeR_6_STAU1KD", sep="/"))
 

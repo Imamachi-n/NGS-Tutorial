@@ -3,9 +3,10 @@ library(bridger2)
 library(data.table)
 
 dirname <- commandArgs(trailingOnly=TRUE)[1]
+
 inputFile <- strsplit(commandArgs(trailingOnly=TRUE)[2], ',')[[1]]
 
-group <- c("siCTRL", "siPUM1")    # Required
+group <- c("siCTRL", "siSTAU1")    # Required
 hour <- c(0, 1, 2, 4, 8, 12)    # Required
 
 input_matrix <- NULL
@@ -32,7 +33,7 @@ halflife_table <- BridgeRCore(input_matrix,
 halflife_table <- fread(paste(dirname, "BridgeR_5_halflife_calc_R2_selection.txt", sep="/"), header = T)
 
 pvalue_table <- BridgeRPvalueEvaluation(halflife_table, group = group,
-                        hour = hour, comparisonFile = c("siCTRL","siPUM1"),
+                        hour = hour, comparisonFile = c("siCTRL","siSTAU1"),
                         inforColumn = 4, CutoffTimePointNumber = 4, calibration = FALSE,
-                        save = TRUE, outputPrefix = paste(dirname, "BridgeR_6_PUM1KD", sep="/"))    # Required
+                        save = TRUE, outputPrefix = paste(dirname, "BridgeR_6_STAU1KD", sep="/"))
 
