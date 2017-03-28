@@ -1,0 +1,10 @@
+[data]
+filter_results = True
+min_event_reads = 20
+strand = fr-firststrand
+
+[sampler]
+burn_in = 500
+lag = 10
+num_iters = 5000
+num_processors = 8

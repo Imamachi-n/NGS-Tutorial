@@ -11,16 +11,16 @@ featureCountFile="${resultDir}/featureCounts_result_test.txt"
 resultFile="${resultDir}/DEXSeq_test_result.txt"
 
 # Count reads on each exon
-# mkdir DEXSeq_output_test
-# featureCounts -T 8 -f -O -s 2 \
-# -F GTF -t exon -a ${gtfFile} \
-# -o ${featureCountFile} \
-# ./tophat_out_SRR4081222_Control_1/accepted_hits.bam \
-# ./tophat_out_SRR4081223_Control_2/accepted_hits.bam \
-# ./tophat_out_SRR4081224_Control_3/accepted_hits.bam \
-# ./tophat_out_SRR4081225_UPF1_knockdown_1/accepted_hits.bam \
-# ./tophat_out_SRR4081226_UPF1_knockdown_2/accepted_hits.bam \
-# ./tophat_out_SRR4081227_UPF1_knockdown_3/accepted_hits.bam
+mkdir DEXSeq_output_test
+featureCounts -T 8 -f -O -s 2 \
+-F GTF -t exon -a ${gtfFile} \
+-o ${featureCountFile} \
+./tophat_out_SRR4081222_Control_1/accepted_hits.bam \
+./tophat_out_SRR4081223_Control_2/accepted_hits.bam \
+./tophat_out_SRR4081224_Control_3/accepted_hits.bam \
+./tophat_out_SRR4081225_UPF1_knockdown_1/accepted_hits.bam \
+./tophat_out_SRR4081226_UPF1_knockdown_2/accepted_hits.bam \
+./tophat_out_SRR4081227_UPF1_knockdown_3/accepted_hits.bam
 
 # DEXSeq Run
 Rscript ./DEXSeq_test.R \
