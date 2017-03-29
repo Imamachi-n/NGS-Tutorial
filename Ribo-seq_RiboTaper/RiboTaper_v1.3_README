@@ -1,0 +1,512 @@
+15 Jan 2016, RiboTaper Version 1.3:
+
+Dear user,
+This is a detailed RiboTaper user guide explaining the RiboTaper workflow.
+
+###################################################################
+#    This file is part of RiboTaper.
+#    RiboTaper is a method for defining translated ORFs using
+#    Ribosome Profiling data.
+#   
+#    Copyright (C) 2016  Lorenzo Calviello
+#
+#    RiboTaper is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    RiboTaper is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with RiboTaper.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Contact: Lorenzo.Calviello@mdc-berlin.de
+#######################################################################
+
+
+
+The RiboTaper workflow consists of:
+
+
+1) Creation of annotation files, for all annotated genes
+
+2) Data tracks creation from Ribo-seq + RNA-seq experiments, dependent on P-sites calculation cutoffs.
+
+3) Analysis of translation on exonic regions + quality control
+
+4) ORF finding in coding and non-coding regions
+
+5) Creation of custom peptide fasta database
+
+
+In this archive you find all the scripts + the files used to obtain our results
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+0) Requirements
+
+We ran the RiboTaper analysis on a SGE cluster, using 7 cores and h_vmem 8G. For each dataset the complete RiboTaper workflow (from the bam files to final results) took almost a day.
+More investigation on the specific requirements for each dataset and usage on different machines will follow in the next future.
+
+RiboTaper runs on Linux, it requires Samtools(0.1.19, must be in the PATH), Bedtools (v2.17.0) and R (3.0.1) with the following packages (available in the R_packages folder on the website):
+
+seqinr_3.1-3
+ade4_1.7-2
+multitaper_1.0-11
+doMC_1.3.3
+iterators_1.0.7
+foreach_1.4.2
+XNomial_1.0.1
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+1) Create annotation files
+
+create_annotation_files.bash
+
+Usage: ./create_annotation_files.bash <gencode_gtf_file> <genome_fasta_file(indexed)> <use_ccdsid?> <use_appris?> <dest_folder> <bedtools_path> <scripts_dir>
+
+This script takes a GTF, a genome fasta file and additional parameters to build a list of exon coordinates, exon sequences and transcript structures.
+
+IMPORTANT:
+1) In all the files (gtf, fasta, BAM) the chromosome names should be the same and NOT contain underscores: "_".
+2) The gtf has to contain coding and non-coding genes (genes without CDS regions). In case you want to use Stringtie/Cufflinks-derived GTF files you should merge (cat) them with the standard annotation containing CDS regions.
+3) The gtf MUST have a "transcript_id" and a "gene_id" field per each "exon" and "CDS", entry; an additional field ("gene_type" or "gene_biotype") will be reported in the column "annotation" in the RiboTaper output files ("no_biotype" otherwise, e.g. Cufflinks/Stringtie transcripts).
+4) The genome fasta file has to be non-masked and with all letters Uppercase (e.g. no ATGCCGTCGaagtgaaa). See point 1)
+5) Be careful about scaffolds, both in the genome and GTF files, which may create errors in the whole pipeline (to be tested...).
+6) Underscores "_" in gene/transcripts ids will be substituted with dashes "-"
+7) The current RiboTaper framework is not designed to identify and quantify ORFs on different transcripts. Which means the transcript annotation is Crucial.
+As soon as an ORF is identified on a transcript, RiboTaper reports it, without knowing if the ribo-seq and rna-seq reads come from one transcript isoform or another.
+
+
+example:
+
+
+transcript 1
+
+...........AUG..|..|----intron--..|..|..|---intron---|..|..|..Stop
+
+transcript 2
+
+...........AUG..|..|------------intron---------------|..|..|..Stop
+
+
+
+Both ORFs may be reported, but it does not necessarily mean that both actually exist.
+For the gencode v19 GTF file (human), we recommend using the ccds and appris tags to filter out low-confidence transcript isoforms.
+
+
+
+-----Arguments:
+
+<gtf_file> 				GTF file, check requirements above.
+<genome_fasta_file(indexed)>		Genome fasta file, not-repeat maskesd, uppercase letters
+<use_ccdsid?>				true or false; Do you want to use CCDS annotation in your GTF file? (valid for Human Gencode 19 and Mouse Gencode M3 )
+If yes, only exons/transcripts with the CCDS tag will be used as CCDS exons/transcripts, otherwise all exons/transcripts with a CDS region are going to be annotated as CCDS.
+<use_appris?> 				true or false; Do you have Appris annotation in the GTF? (valid for Human Gencode 19 and Mouse Gencode M3 )
+If yes, only exons/transcripts with the appris tag will be used, using only 1 transcript per appris gene (the appris_principal transcript or other appris transcript).
+If a gene does not have Appris transcript, all the annotated transcript structures are used.
+<dest_folder> 				The destination folder for the annotation files, to be used in the RiboTaper analysis
+<bedtools_path> 			Path to BEDtools executables
+<scripts_dir> 				the "scripts" directory (available in this .zip file)
+
+-----Output files:
+
+all_cds.bed
+all_exons.bed
+cds_coords_transcripts
+exons_cds_all
+frames_ccds
+gene_annot_names
+genes_appris_noprin
+genes_appris_prin
+genes_ccds
+genes_ccds_appris
+genes_noappris_noprin
+genes_start_end.bed
+sequences_ccds
+sequences_exonsccds
+sequences_nonccds
+start_stops_FAR.bed
+transcr_exons_ccds_appris.bed (optional)
+transcr_exons_ccds_appris_noprin.bed (optional)
+transcr_exons_ccds_appris_prin.bed (optional)
+transcr_exons_ccds.bed
+transcr_exons_ccds_ccdsid.bed (optional)
+transcr_exons_ccds_noappris_noprin.bed (optional)
+transcr_exons_nonccds.bed
+unique_ccds.bed
+unique_ccds_exonccds_seq.fa
+unique_ccds_seq.fa
+unique_ccds_seq_name_tab
+unique_exons_ccds.bed
+unique_exons_ccds_seq.fa
+unique_exons_ccds_seq_name_tab
+unique_exons_nonccds_seq.fa
+unique_nonccds.bed
+unique_nonccds_seq_name_tab
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+NOT INCLUDED IN THE RIBOTAPER WORKFLOW:
+
+Metagene analysis for P-sites definition
+
+Deciding which Ribo-seq read length to use at which distance cutoff to define P-sites position is the critical decision for the whole RiboTaper pipeline.
+Here we provide a script to produce metaplots around annotated start and stop codon (coordinates are removed when distant <100bp from each other, to avoid artifacts in the aggregate plots), to visualize the frame precision of different read lengths.
+Despite biochemical constraint about the size of ribosome-protected fragments, the outcome of such analysis can be heaviliy influenced by the experimental protocol used.
+
+create_metaplots.bash
+
+Usage: create_metaplots.bash <ribo.bam> <bedfile> <name> <bedtools_dir> <scripts_dir>
+
+The bed file to use should contain the location of annotated start and stop codon, which can be retrieved from the previous step ("start_stops_FAR.bed").
+The "name" will only affect the name of the pdf files created.
+Important:
+The script automatically downsamples the BAM (to 10%) file to minimize RAM usage.
+
+-----Output files:
+metaplots directory, containing pdf files for the metaplots at different distances from start and stop codons.
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      RiboTaper    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+Ribotaper master file
+
+Ribotaper.sh 
+
+Important: the Ribo-seq and RNA-seq data must be aligned to the same genome (ideally also same GTF file) used by the previous step (create_annotation_files).
+Important: RiboTaper needs at least 2 cpu cores.
+
+Usage: ./Ribotaper.sh <Ribo_bamfile> <RNA_bamfile> <annotation_dir> <comma-sep_read_lenghts_ribo> <comma-sep_cutoffs> <scripts_dir> <bedtools_dir>  <n_cores> 
+
+
+-----Arguments:
+
+
+<Ribo_bamfile> 			Ribo-seq alignment file, used during the whole pipeline
+<RNA_bamfile>  			RNA-seq alignment file, used during the whole pipeline
+<annotation_dir> 		Annotation directory created in the previous step, used during the whole pipeline
+<comma-sep_read_lenghts_ribo>	comma-separated vector of read lengths to be used (in our case 26,28,29 but varies a lot in different datasets), used for P-sites calculation
+<comma-sep_cutoffs>		comma-separated vector of offsets to be used (in our case 9,12,12 but varies a lot in different datasets), used for P-sites calculation
+<scripts_dir>			"scripts" directory, used during the whole pipeline
+<bedtools_dir>			path to BEDtools executables, used during the whole pipeline
+<n_cores> 			n of cores to use, used during the whole pipeline (>1)
+
+
+Important: BAM files are filtered to extract primary alignments (best alignment per read) and unique alignment, using different flags (tested on STAR alignments so far, it should work for TopHat too):
+
+samtools view -b -q 50 $ribo_bam > RIBO_unique.bam 
+samtools view -b -F 0X100 $ribo_bam > RIBO_best.bam 
+samtools view -b -q 50 $rna_bam > RNA_unique.bam 
+samtools view -b -F 0X100 $rna_bam > RNA_best.bam 
+
+
+Note:
+
+To run the RiboTaper pipeline starting from the ORF finding step, run "Ribotaper_ORF_find.sh" with the same arguments as "Ribotaper.sh". It requires the previous steps (data tracks creation and exon-level calculations) to be performed successfully.
+
+---------------------------------------------------SINGLE SCRIPTS DESCRIPTION----------------------------------------------------------------------
+
+
+a) Calculate P-sites
+
+
+P_sites_RNA_sites_calc.bash
+
+ 
+Usage: P_sites_RNA_sites_calc.bash <read_lengths> <offsets> <bedtools_dir>
+
+Calculates single-nucleotide P-sites position and RNA sites position (+ 25 nt, default) from the Ribo and RNA bam files.
+To define suitable read lengths and cutoffs, we examined aggregate plots around start and stop codon positions in the genome, using different read lengths.
+P.s. If you want to provide your P-sites, just put in your working directory a 6 column bed files with your P-sites positions (1 nucleotide length) and call it "P_sites_all"
+
+
+-----Arguments:
+
+
+<read_lengths> 			comma-separated vector of read lengths to be used (in our case 26,28,29 but varies a lot in different datasets)
+<offsets> 			comma-separated vector of offsets to be used (in our case 9,12,12 but varies a lot in different datasets)
+
+-----Output files:
+
+P_sites_all
+Centered_RNA
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+b) Create tracks 
+
+
+create_tracks.bash
+
+
+Usage: create_tracks.bash <annot_dir> <name> <bedtools_dir>
+
+This script creates the data tracks for each bed regions in the annotation directory, in our case CCDS exons, Exons in CCDS genes, nonCCDS exons.
+
+
+-----Arguments:
+
+
+<annot_dir> 			annotation directory 
+<name> 				output name
+<bedtools_dir> 			path to BEDtools executables.
+
+
+-----Output files:
+
+RIBO_unique_counts
+RIBO_best_counts
+RNA_unique_counts
+RNA_best_counts
+
+data_tracks directory, including
+Centered_RNA_tracks_ccds
+Centered_RNA_tracks_exonsccds
+Centered_RNA_tracks_nonccds
+index_tracks_ccds
+index_tracks_exonsccds
+index_tracks_nonccds
+P_sites_all_tracks_ccds
+P_sites_all_tracks_exonsccds
+P_sites_all_tracks_nonccds
+Psit_Ribo_Rna_Cent_tracks_ccds
+Psit_Ribo_Rna_Cent_tracks_exonsccds
+Psit_Ribo_Rna_Cent_tracks_nonccds
+RIBO_tracks_ccds
+RIBO_tracks_exonsccds
+RIBO_tracks_nonccds
+RNA_tracks_ccds
+RNA_tracks_exonsccds
+RNA_tracks_nonccds
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+
+c) Track analysis (exons)
+
+
+tracks_analysis.R
+
+
+This script calculates the P-sites periodicity in each exon, to be used for quality control and subsequent ORF finding.
+
+/tracks_analysis.R <name> <scripts_dir> <n_of_cores>
+
+
+-----Arguments:
+
+
+<name> 				input track name  (ccds, exonsccds, nonccds)
+<scripts_dir>  			"scripts" directory 
+<n_of_cores> 			n of cores to use (>1)
+
+-----Output files
+
+results_ccds
+results_exonsccds
+results_nonccds
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+d) Exons annotation
+
+
+annotate_exons.R
+
+
+annotate_exons.R <annot_dir> <scripts_dir> <n_of_cores>
+
+This scripts annotates the exons based on the CCDS (or CDS) annotation, to be used later for quality control and ORF finding
+
+
+-----Arguments:
+
+
+<annot_dir> 			annotation directory 
+<scripts_dir> 			"scripts" directory 
+<n_of_cores> 			n of cores to use (>1)
+
+-----Output files:
+
+all_calculations_ccdsgenes_annot_new (results for ccds exons + exonsccds exons + many other statistics for non-CDS regions of all exons)
+results_nonccds_annot		results for nonccds
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+
+e) Quality control plots
+
+
+quality_check.R
+
+
+quality_check.R <annot_dir>
+
+This script creates a pdf showing the number of periodic exons in different coverage/length settings, giving us an idea of the quality of our data in different scenarios. 
+Same for RNA profiles. The (exonic) frames predicted by the P-sites position vs the annotation is also shown, to check the fidelity of the P-sites calculation (usually >90%, if lower it means that the P-site calculation is no optimal, need to check the read lengths + cutoffs provided).
+
+
+
+-----Arguments:
+
+
+<annot_dir>			annotation directory 
+
+-----Output files:
+
+quality_check_plots.pdf 
+
+--------------------------------------------------------------------------------------------------------------------------
+
+h) CCDS ORF finding
+
+CCDS_orf_finder.R
+
+CCDS_orf_finder.R <annot_dir> <scripts_dir> <bedtools_dir> <n_of_cores>
+
+This script finds periodic ORFs in CCDS(or CDS) genes.
+Transcripts are merged based on the GTF annotation provided and on the CCDS/appris tags. The use of appris and ccds tags dramatically reduces the search space for the ORF finding (recommended for human/mouse).
+
+More work is needed to improve the ORF finding on every possible transcript structure.
+This scripts uses 3 different methods to distinguish between start codons and internal methionines:
+
+The ORF with more than 5 in-frame reads (>50%) between the 2 most upstream AUGs is selected (best results when checked with annotation + QTI-seq data)
+
+AUG-------AUG-------------------AUG------------STOP
+010001000020010030040000001000002002004005008000000
+**********YES**************************************
+
+
+ORFs must have >50% of P-sites positions in frame and be 3nt periodic (multitaper test, p-value<0.05)
+
+
+-----Arguments:
+
+
+<annot_dir>			annotation directory 
+<scripts_dir>  			"scripts" directory 
+<n_of_cores> 			n of cores to use (>1)
+<bedtools_dir> 			path to BEDtools executables
+
+-----Output files:
+
+tmp_ccds, temp directory
+
+ORFs_CCDS directory, including directories:
+best_periodicity max_P_sites more_tapers directories, including:
+
+ORFs_all 			not filtered ORFs found
+ORFs_sign_filtered_multi	Periodic ORFs overlapping coding regions, filtered by multimapping (ORFs_ccds)
+ORFs_sign_notfiltered_multi	Periodic ORFs overlapping coding regions (ORFs_ccds)
+sORFs_sign_filtered_cds		Periodic ORFs nonoverlapping coding regions, filtered by multimapping (u/dORFs)
+sORFs_sign_filtered_cds_multi	Periodic ORFs nonoverlapping coding regions (u/dORFs)
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+i) NONCCDS ORF finding
+
+
+NONCCDS_orf_finder.R
+
+
+NONCCDS_orf_finder.R <annot_dir> <scripts_dir> <bedtools_dir> <n_of_cores>
+
+This script finds periodic ORFs in non-CCDS(or non-CDS) genes. Same procedure as in the CCDS ORF finding.
+
+
+-----Arguments:
+
+
+<annot_dir> annotation directory 
+<scripts_dir>  "scripts" directory 
+<n_of_cores> n of cores to use
+<bedtools_dir> path to BEDtools executables
+
+
+-----Output files:
+tmp_nonccds, temp directory
+
+
+ORFs_NONCCDS directory, including directories:
+best_periodicity max_P_sites more_tapers directories, including:
+noncod_noORF
+ORFs_all			not filtered ORFs found
+ORFs_sign_cds_filtered_multi	Periodic ORFs overlapping coding regions, filtered by multimapping (nonccds_coding_orfs)
+ORFs_sign_cds_notfiltered_multi	Periodic ORFs overlapping coding regions (nonccds_coding_orfs)
+ORFs_sign_nocds_filtered_multi	Periodic ORFs nonoverlapping coding regions, filtered by multimapping (ncORFs)
+ORFs_sign_nocds_nofilter	Periodic ORFs nonoverlapping coding regions (ncORFs)
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+j) Group ORFs + create Protein database
+
+
+create_protein_db.R
+
+
+This script groups the periodic ORFs found with the different methods and creates a protein database fasta file, to be used as an alternative database for peptide search.
+Moreover, bed files for translated ORFs are generated.
+
+-----Output files:
+
+ORF_max
+ORF_max_filt 	filtered for multimapping and non-coding nonccds_coding_ORFs (see below) (recommended for further analysis)
+
+
+protein_db_max.fasta	(for proteomics search, not filtered for multimapping)
+
+
+translated_ORFs_sorted.bed	corresponding to ORF_max
+translated_ORFs_filtered_sorted.bed 	corresponding to ORF_max_filt	filtered for multimapping and non-coding nonccds_coding_ORFs (see below) (recommended for further analysis)
+
+Different ORF categories are reported:
+
+ORFs_ccds -> in CCDS genes, overlapping annotated CDS
+uORFs -> in CCDS genes upstream of annotated CDS, not overlapping any coding exons
+dORFs -> in CCDS genes downstream of annotated CDS, not overlapping any coding exons
+nonccds_coding_ORFs -> nonCCDS genes but overlapping coding exons (can be coding or non-coding). e.g. StringTie/Cufflinks transcripts overlapping with CDS regions will be nonccds_coding_ORFs no_biotype
+ncORFS ->  nonCCDS genes and non overlapping coding exons (mostly in non-coding genes, when in protein-coding genes means in nonCCDS genes (but annotated as protein coding) and non-overlapping any CDS region, e.g. uORF of a nonCCDS protein coding gene.) e.g. ORFs in StringTie/Cufflinks transcripts nonoverlapping with CDS regions will be included as ncORFS no_biotype
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+k) Final plots and results table
+
+
+ORF_final_results.R
+
+
+This script creates a table with the translated ORFs/genes identified with their category/annotation. 
+A pdf file is generated, containing info about the number of ORFs found, together with their length and coverage per category/annotation.
+
+-----Output files:
+
+ORFs_genes_found	tab-separated values for number of ORFs found and their corresponding genes
+Final_ORF_results.pdf	pdf file with length/coverage distributions for different ORF categories.
+
+
+
+
+
+
+
+
