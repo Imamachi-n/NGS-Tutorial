@@ -7,7 +7,7 @@ This is a detailed RiboTaper user guide explaining the RiboTaper workflow.
 #    This file is part of RiboTaper.
 #    RiboTaper is a method for defining translated ORFs using
 #    Ribosome Profiling data.
-#   
+#
 #    Copyright (C) 2016  Lorenzo Calviello
 #
 #    RiboTaper is free software: you can redistribute it and/or modify
@@ -182,12 +182,12 @@ metaplots directory, containing pdf files for the metaplots at different distanc
 
 Ribotaper master file
 
-Ribotaper.sh 
+Ribotaper.sh
 
 Important: the Ribo-seq and RNA-seq data must be aligned to the same genome (ideally also same GTF file) used by the previous step (create_annotation_files).
 Important: RiboTaper needs at least 2 cpu cores.
 
-Usage: ./Ribotaper.sh <Ribo_bamfile> <RNA_bamfile> <annotation_dir> <comma-sep_read_lenghts_ribo> <comma-sep_cutoffs> <scripts_dir> <bedtools_dir>  <n_cores> 
+Usage: ./Ribotaper.sh <Ribo_bamfile> <RNA_bamfile> <annotation_dir> <comma-sep_read_lenghts_ribo> <comma-sep_cutoffs> <scripts_dir> <bedtools_dir>  <n_cores>
 
 
 -----Arguments:
@@ -205,10 +205,10 @@ Usage: ./Ribotaper.sh <Ribo_bamfile> <RNA_bamfile> <annotation_dir> <comma-sep_r
 
 Important: BAM files are filtered to extract primary alignments (best alignment per read) and unique alignment, using different flags (tested on STAR alignments so far, it should work for TopHat too):
 
-samtools view -b -q 50 $ribo_bam > RIBO_unique.bam 
-samtools view -b -F 0X100 $ribo_bam > RIBO_best.bam 
-samtools view -b -q 50 $rna_bam > RNA_unique.bam 
-samtools view -b -F 0X100 $rna_bam > RNA_best.bam 
+samtools view -b -q 50 $ribo_bam > RIBO_unique.bam
+samtools view -b -F 0X100 $ribo_bam > RIBO_best.bam
+samtools view -b -q 50 $rna_bam > RNA_unique.bam
+samtools view -b -F 0X100 $rna_bam > RNA_best.bam
 
 
 Note:
@@ -223,7 +223,7 @@ a) Calculate P-sites
 
 P_sites_RNA_sites_calc.bash
 
- 
+
 Usage: P_sites_RNA_sites_calc.bash <read_lengths> <offsets> <bedtools_dir>
 
 Calculates single-nucleotide P-sites position and RNA sites position (+ 25 nt, default) from the Ribo and RNA bam files.
@@ -246,7 +246,7 @@ Centered_RNA
 --------------------------------------------------------------------------------------------------------------------------
 
 
-b) Create tracks 
+b) Create tracks
 
 
 create_tracks.bash
@@ -260,7 +260,7 @@ This script creates the data tracks for each bed regions in the annotation direc
 -----Arguments:
 
 
-<annot_dir> 			annotation directory 
+<annot_dir> 			annotation directory
 <name> 				output name
 <bedtools_dir> 			path to BEDtools executables.
 
@@ -311,7 +311,7 @@ This script calculates the P-sites periodicity in each exon, to be used for qual
 
 
 <name> 				input track name  (ccds, exonsccds, nonccds)
-<scripts_dir>  			"scripts" directory 
+<scripts_dir>  			"scripts" directory
 <n_of_cores> 			n of cores to use (>1)
 
 -----Output files
@@ -337,8 +337,8 @@ This scripts annotates the exons based on the CCDS (or CDS) annotation, to be us
 -----Arguments:
 
 
-<annot_dir> 			annotation directory 
-<scripts_dir> 			"scripts" directory 
+<annot_dir> 			annotation directory
+<scripts_dir> 			"scripts" directory
 <n_of_cores> 			n of cores to use (>1)
 
 -----Output files:
@@ -358,7 +358,7 @@ quality_check.R
 
 quality_check.R <annot_dir>
 
-This script creates a pdf showing the number of periodic exons in different coverage/length settings, giving us an idea of the quality of our data in different scenarios. 
+This script creates a pdf showing the number of periodic exons in different coverage/length settings, giving us an idea of the quality of our data in different scenarios.
 Same for RNA profiles. The (exonic) frames predicted by the P-sites position vs the annotation is also shown, to check the fidelity of the P-sites calculation (usually >90%, if lower it means that the P-site calculation is no optimal, need to check the read lengths + cutoffs provided).
 
 
@@ -366,11 +366,11 @@ Same for RNA profiles. The (exonic) frames predicted by the P-sites position vs 
 -----Arguments:
 
 
-<annot_dir>			annotation directory 
+<annot_dir>			annotation directory
 
 -----Output files:
 
-quality_check_plots.pdf 
+quality_check_plots.pdf
 
 --------------------------------------------------------------------------------------------------------------------------
 
@@ -399,8 +399,8 @@ ORFs must have >50% of P-sites positions in frame and be 3nt periodic (multitape
 -----Arguments:
 
 
-<annot_dir>			annotation directory 
-<scripts_dir>  			"scripts" directory 
+<annot_dir>			annotation directory
+<scripts_dir>  			"scripts" directory
 <n_of_cores> 			n of cores to use (>1)
 <bedtools_dir> 			path to BEDtools executables
 
@@ -435,8 +435,8 @@ This script finds periodic ORFs in non-CCDS(or non-CDS) genes. Same procedure as
 -----Arguments:
 
 
-<annot_dir> annotation directory 
-<scripts_dir>  "scripts" directory 
+<annot_dir> annotation directory
+<scripts_dir>  "scripts" directory
 <n_of_cores> n of cores to use
 <bedtools_dir> path to BEDtools executables
 
@@ -495,18 +495,10 @@ k) Final plots and results table
 ORF_final_results.R
 
 
-This script creates a table with the translated ORFs/genes identified with their category/annotation. 
+This script creates a table with the translated ORFs/genes identified with their category/annotation.
 A pdf file is generated, containing info about the number of ORFs found, together with their length and coverage per category/annotation.
 
 -----Output files:
 
 ORFs_genes_found	tab-separated values for number of ORFs found and their corresponding genes
 Final_ORF_results.pdf	pdf file with length/coverage distributions for different ORF categories.
-
-
-
-
-
-
-
-
